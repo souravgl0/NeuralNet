@@ -54,7 +54,7 @@ class NeuralNet():
 
         delta3 = probs
         delta3[range(N),Y.reshape(1,N)] -= 1
-
+        delta3 /= N
 
         db2 = np.sum(delta3,axis=0)
         dW2 = np.dot(a2.T,delta3)
@@ -107,7 +107,7 @@ class NeuralNet():
         expsum = np.sum(probs,axis=1).reshape(N,1)
         probs = probs/expsum
 
-        dataloss = -np.log(probs[range(N),Y])
+        dataloss = -np.log(probs[range(N),Y.reshape(1,N)])
         dataloss = np.sum(dataloss)/N
 
         return dataloss
@@ -153,17 +153,21 @@ loss,grads = NN.process(X,Y)
 for g in grads:
     print g, grads[g]
     print
-grads = NN.gradient_check(X,Y)
-print "dW1: "
-print grads[0]
-print "db1: "
-print grads[1]
+grads2 = NN.gradient_check(X,Y)
 print "dW2: "
-print grads[2]
+print grads2[2]
+print "db1: "
+print grads2[1]
 print "db2: "
-print grads[3]
+print grads2[3]
+print "dW1:  "
+print grads2[0]
 
 print"W1:"
-print g['dW1']-grads[0]
+print grads['dW1']-grads2[0]
 print"b2:"
-print g['db2']-grads[3]
+print grads['db2']-grads2[3]
+print"W2:"
+print grads['dW2']-grads2[2]
+print"b1:"
+print grads['db1']-grads2[1]
