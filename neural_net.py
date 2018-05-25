@@ -36,14 +36,16 @@ class NeuralNet():
         z3 = np.dot(a2,W2)
         z3 = z3 + b2
         # SOFTMAX
+
         probs = np.exp(z3)
         expsum = np.sum(probs,axis=1).reshape(N,1)
         probs = probs/expsum
+        # print probs
 
         if Y is None:
             return probs
 
-        dataloss = -np.log(probs[range(N),Y])
+        dataloss = -np.log(probs[range(N),Y.reshape(1,N)])
         dataloss = np.sum(dataloss)/N
         print dataloss
 
@@ -52,6 +54,7 @@ class NeuralNet():
 
         delta3 = probs
         delta3[range(N),Y.reshape(1,N)] -= 1
+
 
         db2 = np.sum(delta3,axis=0)
         dW2 = np.dot(a2.T,delta3)
@@ -145,8 +148,11 @@ np.random.seed(0)
 NN = NeuralNet(2,3,3)
 X = np.random.randn(100,2)
 Y = np.random.randint(3,size=(100,1))
-loss,g = NN.process(X,Y)
-print g
+loss,grads = NN.process(X,Y)
+
+for g in grads:
+    print g, grads[g]
+    print
 grads = NN.gradient_check(X,Y)
 print "dW1: "
 print grads[0]
