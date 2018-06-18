@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.misc import logsumexp
 
 class NeuralNet():
 
@@ -36,27 +37,22 @@ class NeuralNet():
         z3 = z3 + b2
         # SOFTMAX
 
-        z3 -= np.max(z3,axis=1,keepdims=True)
-        probs = np.exp(z3)
+        # For Numerical Stability. Does not change final softmax value
+        z3t = z3 - np.max(z3,axis=1,keepdims=True)
+        probs = np.exp(z3t)
         expsum = np.sum(probs,axis=1).reshape(N,1)
         probs = probs/expsum
-
-        print probs
 
         if Y is None:
             return probs
 
-        dataloss = -np.log(probs[range(N),Y.reshape(1,N)])
+        dataloss = -z3 + logsumexp(z3,axis=1,keepdims=True)
+        dataloss = dataloss[range(N),Y.reshape(1,N)].reshape(N,1)
 
-        print probs[range(N),Y.reshape(1,N)]
-        print dataloss
-
-        print np.sum(dataloss)
-        dataloss = np.sum(dataloss)/N
+        dataloss = np.mean(dataloss)
 
         regloss = 0.5 * reg * np.sum(W1 * W1) + 0.5 * reg * np.sum(W2 * W2)
         loss = dataloss + regloss
-        # print dataloss
 
         if not gradients:
             return loss
@@ -133,13 +129,12 @@ class NeuralNet():
                 loss_history.append(loss)
                 train_acc_history.append(train_acc)
                 learning_rate *= learning_decay
-            if 1:
+            # if 1:
                 if verbose:
                     print "Iteration: %d/%d loss: %f , Train Accuracy: %f" %(it, num_iters, loss, train_acc)
                 if show_decision_boundary:
                     self.plot_decision_boundary(fig,ax,X,Y)
-            raw_input()
-
+            # raw_input()
         return loss_history, train_acc_history
 
     def predict(self, X):
